@@ -161,16 +161,19 @@ tbody tr:last-child td{border-bottom:none}
   display:flex;flex-direction:column;gap:14px;align-items:flex-start;
 }
 .closer h2{font-size:24px}
-.email-box{
-  display:flex;align-items:center;gap:10px;background:var(--mono-bg);
-  border:1px solid var(--border);border-radius:10px;padding:10px 14px;
-  font-family:"IBM Plex Mono",monospace;font-size:15px;flex-wrap:wrap;
+.waitlist-form{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;width:100%;max-width:440px;
 }
-.copy-btn{
-  border:1px solid var(--border);background:var(--card);color:var(--fg);
-  border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;
+.waitlist-form input[type="email"]{
+  flex:1;min-width:180px;background:var(--mono-bg);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;font-size:15px;color:var(--fg);
+  font-family:"IBM Plex Mono",monospace;
 }
-.copy-btn[data-copied="true"]{color:var(--accent);border-color:var(--accent)}
+.waitlist-form input[type="email"]::placeholder{color:var(--muted)}
+.waitlist-form input[type="email"]:focus{outline:2px solid var(--accent);outline-offset:1px}
+.waitlist-status{font-size:13px;color:var(--muted);min-height:1.4em}
+.waitlist-status[data-state="ok"]{color:var(--accent)}
+.waitlist-status[data-state="error"]{color:#c4573f}
 
 footer{
   padding-block:28px 40px;color:var(--muted);font-size:12px;
@@ -294,10 +297,12 @@ footer{
       This is a feasibility exercise, not a funded product. If you run a test center, schedule accommodations,
       or have tried to solve this and failed, I'd rather hear that now.
     </p>
-    <div class="email-box">
-      <span id="email-text">seatsync9@gmail.com</span>
-      <button class="copy-btn" id="copy-email">Copy</button>
-    </div>
+    <form class="waitlist-form" id="waitlist-form">
+      <input type="email" name="email" id="waitlist-email" placeholder="you@company.com" required autocomplete="email">
+      <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+      <button class="btn" type="submit" id="waitlist-submit">Add to waitlist</button>
+    </form>
+    <p class="waitlist-status" id="waitlist-status"></p>
   </section>
 
   <footer>
@@ -308,22 +313,54 @@ footer{
 </div>
 
 <script>
-  const copyBtn = document.getElementById('copy-email');
-  const emailText = document.getElementById('email-text');
-  copyBtn.addEventListener('click', async () => {
-    const text = emailText.textContent.trim();
-    try {
-      await navigator.clipboard.writeText(text);
-      copyBtn.textContent = 'Copied';
-      copyBtn.dataset.copied = 'true';
-    } catch (e) {
-      const range = document.createRange();
-      range.selectNode(emailText);
-      window.getSelection().removeAllRanges();
-      window.getSelection().addRange(range);
-      copyBtn.textContent = 'Select & copy';
+  // Replace with your Formspree endpoint: sign up at formspree.io with seatsync9@gmail.com,
+  // create a form, and paste its endpoint here. Until then this falls back to a mailto draft.
+  const FORM_ENDPOINT = "https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID";
+
+  const form = document.getElementById('waitlist-form');
+  const emailInput = document.getElementById('waitlist-email');
+  const status = document.getElementById('waitlist-status');
+  const submitBtn = document.getElementById('waitlist-submit');
+
+  function setStatus(text, state) {
+    status.textContent = text;
+    status.dataset.state = state || '';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    if (!email) return;
+
+    if (FORM_ENDPOINT.includes('REPLACE_WITH_YOUR_FORM_ID')) {
+      // Endpoint not configured yet — fall back to a pre-filled email draft.
+      window.location.href =
+        'mailto:seatsync9@gmail.com?subject=Seat-Sync%20waitlist&body=Add%20me%20to%20the%20waitlist%3A%20' +
+        encodeURIComponent(email);
+      setStatus('Opening your email client to confirm — form isn’t connected yet.', 'error');
+      return;
     }
-    setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.dataset.copied = 'false'; }, 1800);
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding...';
+    try {
+      const res = await fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: new FormData(form),
+      });
+      if (res.ok) {
+        form.hidden = true;
+        setStatus('You’re on the list — thanks.', 'ok');
+      } else {
+        setStatus('Something went wrong. Try again, or email seatsync9@gmail.com directly.', 'error');
+      }
+    } catch (err) {
+      setStatus('Something went wrong. Try again, or email seatsync9@gmail.com directly.', 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Add to waitlist';
+    }
   });
 
   document.getElementById('cta-main').addEventListener('click', () => {
