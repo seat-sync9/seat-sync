@@ -1,0 +1,332 @@
+<title>Seat-Sync</title>
+<style>
+/* layout concept: hero -> 3-step process strip -> live-looking availability mock -> two-audience split -> CTA footer, all on a quiet data-registry palette with a monospace accent for anything that reads as "data" */
+:root{
+  --bg:#f6f7f5;
+  --fg:#15241f;
+  --muted:#5b6a63;
+  --accent:#0f6e5c;
+  --accent-fg:#eafaf4;
+  --card:#ffffff;
+  --border:#d8ddd9;
+  --mono-bg:#eef2ef;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1512;
+    --fg:#e9efe9;
+    --muted:#9db0a6;
+    --accent:#49c9a6;
+    --accent-fg:#06211a;
+    --card:#161f1b;
+    --border:#28352f;
+    --mono-bg:#101a16;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1512;
+  --fg:#e9efe9;
+  --muted:#9db0a6;
+  --accent:#49c9a6;
+  --accent-fg:#06211a;
+  --card:#161f1b;
+  --border:#28352f;
+  --mono-bg:#101a16;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  margin:0;
+  font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  padding-inline:16px;
+}
+.wrap{max-width:860px;margin:0 auto}
+.mono{
+  font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  font-variant-numeric:tabular-nums;
+}
+a{color:var(--accent)}
+
+header.top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-block:20px;gap:12px;flex-wrap:wrap;
+}
+.wordmark{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:.2px}
+.wordmark .dot{
+  width:10px;height:10px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.tag{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);
+  border:1px solid var(--border);border-radius:100px;padding:4px 10px;
+}
+
+.hero{padding-block:36px 24px}
+h1{
+  font-size:clamp(32px,6vw,52px);
+  line-height:1.08;
+  margin:0 0 16px;
+  text-wrap:balance;
+  letter-spacing:-0.01em;
+}
+h1 .accent{color:var(--accent)}
+.lede{
+  font-size:18px;color:var(--muted);max-width:60ch;margin:0 0 28px;line-height:1.55;
+}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--accent);color:var(--accent-fg);
+  font-weight:600;padding:12px 20px;border-radius:10px;
+  border:none;cursor:pointer;font-size:15px;
+}
+.btn.secondary{
+  background:transparent;color:var(--fg);border:1px solid var(--border);
+}
+.hint{font-size:13px;color:var(--muted)}
+
+.section{padding-block:40px;border-top:1px solid var(--border)}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--accent);margin:0 0 10px;
+}
+h2{font-size:26px;margin:0 0 10px;text-wrap:balance}
+.section > p.lead{color:var(--muted);max-width:56ch;margin:0 0 28px;line-height:1.6}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:640px){.steps{grid-template-columns:1fr}}
+.step{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:18px;display:flex;flex-direction:column;gap:8px;min-width:0;
+}
+.step .num{
+  font-family:"IBM Plex Mono",monospace;color:var(--accent);font-size:13px;
+}
+.step h3{margin:0;font-size:16px}
+.step p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+
+.panel{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:4px;overflow-x:auto;
+}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px 10px;gap:10px;flex-wrap:wrap;
+}
+.panel-head .title{font-weight:600;font-size:14px}
+.panel-head .pill{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);
+  background:var(--mono-bg);border:1px solid var(--border);border-radius:100px;
+  padding:3px 9px;
+}
+table{width:100%;border-collapse:collapse;min-width:480px}
+thead th{
+  text-align:left;font-size:12px;color:var(--muted);font-weight:500;
+  padding:8px 16px;border-bottom:1px solid var(--border);
+  text-transform:uppercase;letter-spacing:.04em;
+}
+tbody td{
+  padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;
+}
+tbody tr:last-child td{border-bottom:none}
+.bar-wrap{display:flex;align-items:center;gap:8px;min-width:0}
+.bar{
+  position:relative;height:6px;border-radius:100px;background:var(--mono-bg);
+  flex:1;min-width:60px;overflow:hidden;
+}
+.bar > span{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:100px}
+.count{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);white-space:nowrap}
+.sample-note{
+  padding:10px 16px 14px;font-size:12px;color:var(--muted);
+  font-family:"IBM Plex Mono",monospace;
+}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:640px){.split{grid-template-columns:1fr}}
+.audience{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:20px;min-width:0;
+}
+.audience .eyebrow{margin-bottom:8px}
+.audience h3{margin:0 0 8px;font-size:18px}
+.audience ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px;line-height:1.7}
+
+.closer{
+  padding-block:44px;border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:14px;align-items:flex-start;
+}
+.closer h2{font-size:24px}
+.email-box{
+  display:flex;align-items:center;gap:10px;background:var(--mono-bg);
+  border:1px solid var(--border);border-radius:10px;padding:10px 14px;
+  font-family:"IBM Plex Mono",monospace;font-size:15px;flex-wrap:wrap;
+}
+.copy-btn{
+  border:1px solid var(--border);background:var(--card);color:var(--fg);
+  border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;
+}
+.copy-btn[data-copied="true"]{color:var(--accent);border-color:var(--accent)}
+
+footer{
+  padding-block:28px 40px;color:var(--muted);font-size:12px;
+  display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="wordmark"><span class="dot"></span>Seat-Sync</div>
+    <span class="tag">early concept &middot; seeking feedback</span>
+  </header>
+
+  <section class="hero">
+    <h1>Stop calling test centers one by one to find <span class="accent">who has a scribe free on Tuesday.</span></h1>
+    <p class="lede">
+      Test centers that deliver accommodations &mdash; private rooms, screen readers, scribes, extended time &mdash;
+      have no shared way to show delivery vendors what they can actually support on a given day.
+      Today that means phone calls, one center at a time, until someone says yes.
+      Seat-Sync is an early concept for a registry that fixes that.
+    </p>
+    <div class="cta-row">
+      <button class="btn" id="cta-main">Get the concept notes</button>
+      <span class="hint">No product yet &mdash; this is validation, not a pitch.</span>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">How it would work</p>
+    <h2>Three parties, one shared record</h2>
+    <p class="lead">Centers publish what they can support. Vendors search across centers instead of calling each one. Nothing here replaces how a center takes bookings today &mdash; it just replaces the phone tree.</p>
+    <div class="steps">
+      <div class="step">
+        <span class="num">01</span>
+        <h3>Center sets capacity</h3>
+        <p>An owner picks the accommodations their site supports from a standard list and sets how many they have, by date.</p>
+      </div>
+      <div class="step">
+        <span class="num">02</span>
+        <h3>Vendor searches by need</h3>
+        <p>A scheduler asks for a center near a candidate with private room, screen reader and scribe, all free for the exam window.</p>
+      </div>
+      <div class="step">
+        <span class="num">03</span>
+        <h3>Match, hold, confirm</h3>
+        <p>Matching centers and times come back instantly. A short hold prevents two vendors booking the same seat.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">What a search result looks like</p>
+    <h2>Illustrative example &mdash; not live data</h2>
+    <p class="lead">A center's accommodation capacity for a single day, the way a vendor would see it through the registry.</p>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="title">Roselle Testing Center &middot; Oct 15</span>
+        <span class="pill">example data</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Accommodation</th><th>Capacity</th><th>Free right now</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Private room</td>
+            <td class="mono">2</td>
+            <td><div class="bar-wrap"><div class="bar"><span style="width:50%"></span></div><span class="count">1 / 2</span></div></td>
+          </tr>
+          <tr>
+            <td>Screen reader</td>
+            <td class="mono">5</td>
+            <td><div class="bar-wrap"><div class="bar"><span style="width:60%"></span></div><span class="count">3 / 5</span></div></td>
+          </tr>
+          <tr>
+            <td>Scribe</td>
+            <td class="mono">2</td>
+            <td><div class="bar-wrap"><div class="bar"><span style="width:0%"></span></div><span class="count">0 / 2</span></div></td>
+          </tr>
+          <tr>
+            <td>Extended time (1.5x)</td>
+            <td class="mono">&mdash;</td>
+            <td><div class="bar-wrap"><div class="bar"><span style="width:100%"></span></div><span class="count">supported</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="sample-note">sample_date: 2026-10-15 &middot; made up for this page, not a real center's data</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">Who this is for</p>
+    <h2>Two very different daily headaches</h2>
+    <div class="split">
+      <div class="audience">
+        <p class="eyebrow">If you run a test center</p>
+        <h3>Fewer calls, same control</h3>
+        <ul>
+          <li>Set what you support once, update capacity in minutes</li>
+          <li>Decide exactly which vendors can see your availability</li>
+          <li>No change to how you already take bookings</li>
+        </ul>
+      </div>
+      <div class="audience">
+        <p class="eyebrow">If you schedule exam accommodations</p>
+        <h3>One search instead of ten calls</h3>
+        <ul>
+          <li>Search by accommodation, date, radius and exam length</li>
+          <li>See real availability, not a static list of equipment</li>
+          <li>Hold a slot while you confirm with the candidate</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="closer">
+    <p class="eyebrow">Interested, skeptical, or you've tried this before?</p>
+    <h2>Tell me what's wrong with this before I build it</h2>
+    <p class="lede" style="margin-bottom:0">
+      This is a feasibility exercise, not a funded product. If you run a test center, schedule accommodations,
+      or have tried to solve this and failed, I'd rather hear that now.
+    </p>
+    <div class="email-box">
+      <span id="email-text">seatsync9@gmail.com</span>
+      <button class="copy-btn" id="copy-email">Copy</button>
+    </div>
+  </section>
+
+  <footer>
+    <span>Seat-Sync &mdash; concept page, not a company.</span>
+    <span class="mono">v0.1</span>
+  </footer>
+
+</div>
+
+<script>
+  const copyBtn = document.getElementById('copy-email');
+  const emailText = document.getElementById('email-text');
+  copyBtn.addEventListener('click', async () => {
+    const text = emailText.textContent.trim();
+    try {
+      await navigator.clipboard.writeText(text);
+      copyBtn.textContent = 'Copied';
+      copyBtn.dataset.copied = 'true';
+    } catch (e) {
+      const range = document.createRange();
+      range.selectNode(emailText);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      copyBtn.textContent = 'Select & copy';
+    }
+    setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.dataset.copied = 'false'; }, 1800);
+  });
+
+  document.getElementById('cta-main').addEventListener('click', () => {
+    document.querySelector('.closer').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+</script>
